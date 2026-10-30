@@ -1,4 +1,4 @@
-# Folio (working name)
+# BookFolio
 
 A book writing and formatting app for authors: write chapters, design the interior, export EPUB and print-ready PDF.
 Built with Next.js 16 (App Router, Cache Components), Supabase, Tailwind 4 and shadcn/ui (Base UI).
@@ -45,6 +45,7 @@ The app currently runs in **personal, local-only mode**:
   - mirrored gutter margins, running heads and page numbers
 
   The layout runs in a Web Worker (`src/lib/print/`).
+
 - Both are generated from one shared book model (`src/lib/publish/model.ts`), so they always contain the same text.
 - Reading order: title page, copyright page (yours if you wrote a Copyright section), dedication/epigraph, contents, then the rest.
 - Not included yet: covers, images, footnotes.
@@ -64,13 +65,13 @@ Sign-in code is in place but switched off (`PROTECTED_PREFIXES` in `src/lib/supa
 
 ## Scripts
 
-| Command | What it does |
-| --- | --- |
-| `npm run dev` | Dev server on http://localhost:3000 |
-| `npm run build` / `npm run start` | Production build / server (the service worker only registers in production) |
-| `npm run lint` | ESLint |
-| `npm run check:print` | Renders the sample book through the print pipeline and checks layout rules (right-hand starts, contents page numbers, mirrored margins, running heads). Needs the app running on :3000 (fonts load from it). Options: `TRIM=6x9 FONT_SIZE=12`. |
-| `npm run check:epub` | Builds the sample EPUB and checks its structure. Set `EPUBCHECK_JAR` to also run the official W3C EPUBCheck (needs Java). |
+| Command                           | What it does                                                                                                                                                                                                                                   |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                     | Dev server on http://localhost:3000                                                                                                                                                                                                            |
+| `npm run build` / `npm run start` | Production build / server (the service worker only registers in production)                                                                                                                                                                    |
+| `npm run lint`                    | ESLint                                                                                                                                                                                                                                         |
+| `npm run check:print`             | Renders the sample book through the print pipeline and checks layout rules (right-hand starts, contents page numbers, mirrored margins, running heads). Needs the app running on :3000 (fonts load from it). Options: `TRIM=6x9 FONT_SIZE=12`. |
+| `npm run check:epub`              | Builds the sample EPUB and checks its structure. Set `EPUBCHECK_JAR` to also run the official W3C EPUBCheck (needs Java).                                                                                                                      |
 
 ## Project layout
 
