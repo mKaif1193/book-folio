@@ -132,7 +132,8 @@ These map almost 1:1 to the domain model in section 5.
 
 | Concern | Choice | Reason |
 |---|---|---|
-| Editor | **Plate (Slate)** | Same family Atticus proved works for books; rich plugin set; has Yjs binding. (Alternative: TipTap/ProseMirror, also fine.) |
+| Editor | **TipTap (ProseMirror)**, changed from Plate on 2026-10-30 | Headless, so it works with our Base UI kit without fighting Plate's Radix-based components. It has a mature Yjs binding (`@tiptap/extension-collaboration`) for later. Atticus uses Slate/Plate. |
+| Storage (personal mode) | **IndexedDB via Dexie**, with JSON backup/restore | Single-user, offline, no setup. Supabase + Yjs sync comes back when accounts are needed. |
 | Content model | One **Yjs doc per chapter** | Gives offline, merge-safe sync and collaboration in one mechanism; mirrors Atticus's `/syncChapter`. |
 | Sync server | **Hocuspocus** (validates Supabase JWT, stores updates in Postgres) | Supabase Realtime is not a Yjs provider. Hocuspocus is the standard, small and self-hostable. |
 | Offline | y-indexeddb + Serwist service worker | Same approach as Atticus. |
@@ -280,6 +281,24 @@ Pre-export checks: unresolved comments/suggestions, low-res images, missing font
 Biggest technical risks: (1) print layout quality in react-pdf (footnotes, widows/orphans, balanced spreads). Spike it in phase 0. (2) Font licensing for embedding: use OFL fonts only. (3) Slate + Yjs edge cases with tracked changes.
 
 ---
+
+### 8.1 Phase 0 print spike: findings (2026-10-30)
+
+Tested with react-pdf 4.9 in a Web Worker on a 4-chapter sample book (`/spike/print`, `npm run check:print`).
+
+| Area | Result |
+|---|---|
+| Speed | 14–16 pages in about 0.6–1.2 s including 1–2 extra layout passes. Fine for live preview, but long books will need per-chapter caching. |
+| Runs offline in a worker | Yes. Fonts are fetched from the app origin. |
+| Trim sizes | 5×8, 5.25×8, 5.5×8.5, 6×9 all pass the checks. |
+| Mirrored margins | **Not native.** react-pdf applies one padding to every page of a wrapping `<Page>`. Fixed by laying out with the gutter on the right, then shifting recto pages with `pdf-lib` `translateContent`. Verified from text positions. |
+| Chapters begin on right | Works with a measure pass: a hidden render-prop probe reports each chapter's page count, then blank versos are inserted and the book is laid out again. |
+| Gutter by page count | The gutter grows with page count, which changes text width, so layout re-measures until stable (at most 3 passes). |
+| Running heads / folios | Work through `fixed` render-prop text, hidden on chapter openers via `subPageNumber`. **Gotcha:** a folio anchored with `bottom` never rendered; anchor from `top` instead. |
+| Widows/orphans, hyphenation | Native `widows`/`orphans` props. Hyphenation can be turned off per paragraph with `hyphenationCallback`. |
+| Drop caps | **Not native** (no float). A large inline initial made line 2 overlap line 1 until the initial got `lineHeight: 1`. The first line is still tighter than the rest. A true 3-line drop cap needs our own line measuring (fontkit) to split the first lines into a row next to the initial. Treat as Phase 4 work. |
+| Small caps | No OpenType `smcp` feature access seen. Faked with uppercase at a smaller size. Real small caps need a small-caps font cut or our own glyph substitution. |
+| Still untested | Footnotes at the bottom of the page, balanced spreads, full-bleed images, PDF/X output. |
 
 ## 9. Open questions / unknowns
 
